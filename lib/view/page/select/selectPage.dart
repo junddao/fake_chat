@@ -127,10 +127,6 @@ class _SelectPageState extends State<SelectPage> {
                 border: Border.all(color: MColors.pinkish_grey, width: 1)),
             child: TextFormField(
               controller: yourIdController,
-              // onChanged: (value){
-              //   if(value.length >15)
-              //     _meetingNameController.text = value.substring(0,value.length);
-              // },
               inputFormatters: [
                 LengthLimitingTextInputFormatter(15),
               ],
