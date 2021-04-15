@@ -2,8 +2,8 @@
     package="com.jtb.fake_chat">
    <application
         android:requestLegacyExternalStorage="true"
-        android:label="fake_chat"
-        android:icon="@mipmap/ic_launcher">
+        android:label="가짜 채팅"
+        android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
@@ -38,5 +38,8 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-9695790043722201~8899560862"/>
     </application>
 </manifest>

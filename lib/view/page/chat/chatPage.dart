@@ -1,8 +1,13 @@
+import 'package:bubble/bubble.dart';
 import 'package:fake_chat/data/message_data.dart';
 import 'package:fake_chat/data/selected_data.dart';
+import 'package:fake_chat/util/admob_service.dart';
 import 'package:fake_chat/view/style/colors.dart';
+import 'package:fake_chat/view/style/size_config.dart';
 import 'package:fake_chat/view/style/textstyles.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ChatPage extends StatefulWidget {
   ChatPage({SelectedData selectedDate}) : _selectedData = selectedDate;
@@ -21,8 +26,17 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     super.initState();
     _textController = new TextEditingController();
-
     pDateTime = DateTime.now();
+
+    // 초기에 광고 하나 보여주자
+    AdMobService ams = AdMobService();
+    InterstitialAd newAd = ams.getNewInterstitial();
+    newAd.load();
+    newAd.show(
+      anchorType: AnchorType.bottom,
+      anchorOffset: 0.0,
+      horizontalCenterOffset: 0.0,
+    );
   }
 
   @override
@@ -62,17 +76,39 @@ class _ChatPageState extends State<ChatPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        Center(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.black12,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Padding(
+              padding:
+                  const EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
+              child: Text(
+                getFakeDate(),
+                style: MTextStyles.regular12White,
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 8,
+        ),
         Expanded(
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: _messageDatas.length,
-            itemBuilder: (context, index) {
-              if (_messageDatas[index].isMine) {
-                return returnMyMessage(index);
-              } else {
-                return returnYourMessage(index);
-              }
-            },
+          child: Padding(
+            padding: const EdgeInsets.only(left: 8, right: 8),
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: _messageDatas.length,
+              itemBuilder: (context, index) {
+                if (_messageDatas[index].isMine) {
+                  return returnMyMessage(index);
+                } else {
+                  return returnYourMessage(index);
+                }
+              },
+            ),
           ),
         ),
         Container(
@@ -98,6 +134,7 @@ class _ChatPageState extends State<ChatPage> {
                           t: getFakeTime(),
                         ),
                       );
+                      _textController.clear();
                     });
                   },
                 ),
@@ -112,9 +149,23 @@ class _ChatPageState extends State<ChatPage> {
                 SizedBox(
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.sentiment_satisfied_sharp,
-                        color: MColors.greyish,
+                      InkWell(
+                        // onTap: () {
+                        //   setState(() {
+                        //     _messageDatas.add(
+                        //       MessageData(
+                        //         isMine: true,
+                        //         deviderDate: true,
+                        //         message: getFakeDate(),
+                        //         t: getFakeTime(),
+                        //       ),
+                        //     );
+                        //   });
+                        // },
+                        child: Icon(
+                          Icons.sentiment_satisfied_sharp,
+                          color: MColors.greyish,
+                        ),
                       ),
                       SizedBox(
                         width: 8,
@@ -132,6 +183,7 @@ class _ChatPageState extends State<ChatPage> {
                                 t: getFakeTime(),
                               ),
                             );
+                            _textController.clear();
                           });
                         },
                       ),
@@ -147,70 +199,174 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget returnMyMessage(int index) {
+    if (index == 0 && _messageDatas[index].isMine == true) {
+      return returnMyFirstMessage(index);
+    } else if (index > 0 &&
+        _messageDatas[index].isMine == true &&
+        _messageDatas[index - 1].isMine == false) {
+      {
+        return returnMyFirstMessage(index);
+      }
+    } else if (index > 0 &&
+        _messageDatas[index].t.minute != _messageDatas[index - 1].t.minute) {
+      return returnMyFirstMessage(index);
+    } else {
+      return returnMyNormalMessage(index);
+    }
+  }
+
+  Widget returnMyFirstMessage(int index) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          getTime(index),
-          getMessageBox(index),
-        ],
+      child: Container(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Container(
+              width: SizeConfig.screenWidth * 0.6,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  getTime(index),
+                  Flexible(child: getMyFirstMessageBox(index)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget returnMyNormalMessage(int index) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Container(
+        child: Row(
+          // mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Container(
+              width: SizeConfig.screenWidth * 0.6,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  getTime(index),
+                  Flexible(child: getMyNormalMessageBox(index)),
+                ],
+              ),
+            ),
+            // Expanded(child: SizedBox.shrink()),
+          ],
+        ),
       ),
     );
   }
 
   Widget returnYourMessage(int index) {
-    if (_messageDatas.last.isMine == false &&
-        _messageDatas.last.t.minute < getFakeTime().minute) {
-      return returnFirstMessage(index);
+    if (index == 0 && _messageDatas[index].isMine == false) {
+      return returnYourFirstMessage(index);
+    } else if (index > 0 &&
+        _messageDatas[index].isMine == false &&
+        _messageDatas[index - 1].isMine == true) {
+      {
+        return returnYourFirstMessage(index);
+      }
+    } else if (index > 0 &&
+        _messageDatas[index].t.minute != _messageDatas[index - 1].t.minute) {
+      return returnYourFirstMessage(index);
     } else {
-      return returnNormalMessage(index);
+      return returnYourNormalMessage(index);
     }
   }
 
-  Widget returnFirstMessage(index) {
-    return Row(
-      children: [
-        CircleAvatar(
-          backgroundImage: FileImage(widget._selectedData.yourImage),
-          radius: 20,
-        ),
-        Column(
+  Widget returnYourFirstMessage(index) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Container(
+        child: Row(
           children: [
-            Text(widget._selectedData.yourId),
-            getMessageBox(index),
+            CircleAvatar(
+              backgroundImage: FileImage(widget._selectedData.yourImage),
+              radius: 20,
+            ),
+            SizedBox(
+              width: 8,
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(widget._selectedData.yourId),
+                SizedBox(
+                  height: 4,
+                ),
+                Container(
+                  width: SizeConfig.screenWidth * 0.5,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Flexible(
+                        child: getYourFirstMessageBox(index),
+                      ),
+                      getTime(index),
+                    ],
+                  ),
+                )
+              ],
+            ),
           ],
         ),
-      ],
+      ),
     );
   }
 
-  Widget returnNormalMessage(int index) {}
-
-  TimeOfDay getFakeTime() {
-    Duration d = DateTime.now().difference(pDateTime);
-
-    int fakeMinute = (widget._selectedData.time.minute + d.inMinutes) % 60;
-    int fakeHour = (widget._selectedData.time.hour + d.inHours) % 24;
-
-    TimeOfDay fakeTime = new TimeOfDay(hour: fakeHour, minute: fakeMinute);
-
-    return fakeTime;
+  Widget returnYourNormalMessage(int index) {
+    return Container(
+      padding: const EdgeInsets.only(bottom: 8),
+      width: SizeConfig.screenWidth * 0.5,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          CircleAvatar(
+            backgroundColor: Colors.transparent,
+            radius: 20,
+          ),
+          SizedBox(
+            width: 8,
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: SizeConfig.screenWidth * 0.5,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Flexible(child: getYourNormalMessageBox(index)),
+                    getTime(index),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
-  Widget getMessageBox(int index) {
-    return Container(
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(18)),
-          border: Border.all(
-              color: _messageDatas[index].isMine == true
-                  ? MColors.kakao_yellow
-                  : MColors.white,
-              width: 8),
-          color: _messageDatas[index].isMine == true
-              ? MColors.kakao_yellow
-              : MColors.white),
+  Widget getYourNormalMessageBox(int index) {
+    return Bubble(
+      // margin: BubbleEdges.only(top: 10),
+
+      nip: BubbleNip.leftTop,
+      showNip: false,
+      color: MColors.white,
+      radius: Radius.circular(8.0),
       child: Text(
         _messageDatas[index].message,
         style: MTextStyles.regular18black,
@@ -218,7 +374,65 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
+  Widget getMyNormalMessageBox(int index) {
+    return Bubble(
+      // margin: BubbleEdges.only(top: 10),
+
+      nip: BubbleNip.rightTop,
+      showNip: false,
+
+      color: MColors.kakao_yellow,
+      radius: Radius.circular(8.0),
+      child: Text(
+        _messageDatas[index].message,
+        style: MTextStyles.regular18black,
+      ),
+    );
+  }
+
+  Widget getYourFirstMessageBox(int index) {
+    return Bubble(
+      // margin: BubbleEdges.only(top: 10),
+
+      // alignment: Alignment.topLeft,
+      nip: BubbleNip.leftTop,
+      nipOffset: 3.0,
+      color: MColors.white,
+      radius: Radius.circular(8.0),
+      child: Text(
+        _messageDatas[index].message,
+        style: MTextStyles.regular18black,
+      ),
+    );
+  }
+
+  Widget getMyFirstMessageBox(int index) {
+    return Bubble(
+      // margin: BubbleEdges.only(top: 10),
+
+      // alignment: Alignment.topRight,
+      nip: BubbleNip.rightTop,
+      nipOffset: 3.0,
+      color: MColors.kakao_yellow,
+      radius: Radius.circular(8.0),
+      child: Text(
+        _messageDatas[index].message,
+        style: MTextStyles.regular18black,
+        maxLines: 10,
+      ),
+    );
+  }
+
   Widget getTime(int index) {
+    if (_messageDatas.length > index + 1) {
+      if (_messageDatas[index].isMine == _messageDatas[index + 1].isMine) {
+        if (_messageDatas[index].t.minute ==
+            _messageDatas[index + 1].t.minute) {
+          return SizedBox.shrink();
+        }
+      }
+    }
+
     if (_messageDatas[index].t.hour > 12) {
       int tempHour = _messageDatas[index].t.hour - 12;
       int tempMinutes = _messageDatas[index].t.minute;
@@ -243,4 +457,52 @@ class _ChatPageState extends State<ChatPage> {
       );
     }
   }
+
+  TimeOfDay getFakeTime() {
+    Duration d = DateTime.now().difference(pDateTime);
+
+    int fakeMinute = (widget._selectedData.time.minute + d.inMinutes) % 60;
+    int fakeHour = (widget._selectedData.time.hour + d.inHours) % 24;
+
+    TimeOfDay fakeTime = new TimeOfDay(hour: fakeHour, minute: fakeMinute);
+
+    return fakeTime;
+  }
+
+  String getFakeDate() {
+    String year = widget._selectedData.pickedDate.year.toString() + "년 ";
+    String month = widget._selectedData.pickedDate.month.toString() + "월 ";
+    String day = widget._selectedData.pickedDate.day.toString() + "일 ";
+    String dayOfTheWeek;
+    switch (widget._selectedData.pickedDate.weekday) {
+      case 1:
+        dayOfTheWeek = "월요일";
+        break;
+      case 2:
+        dayOfTheWeek = "화요일";
+        break;
+      case 3:
+        dayOfTheWeek = "수요일";
+        break;
+      case 4:
+        dayOfTheWeek = "목요일";
+        break;
+      case 5:
+        dayOfTheWeek = "금요일";
+        break;
+      case 6:
+        dayOfTheWeek = "토요일";
+        break;
+      case 7:
+        dayOfTheWeek = "일요일";
+        break;
+      default:
+    }
+
+    String fakeDate = year + month + day + dayOfTheWeek;
+
+    return fakeDate;
+  }
+
+  returnDateLine(int index) {}
 }

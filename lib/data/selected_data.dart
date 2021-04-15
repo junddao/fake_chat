@@ -7,14 +7,14 @@ class SelectedData {
   TimeOfDay time;
   String myId;
   String yourId;
-  File myImage;
+  // File myImage;
   File yourImage;
   SelectedData({
     this.pickedDate,
     this.time,
     this.myId,
     this.yourId,
-    this.myImage,
+    // this.myImage,
     this.yourImage,
   });
 }

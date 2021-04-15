@@ -1,4 +1,5 @@
 import 'package:fake_chat/view/page/chat/chatPage.dart';
+import 'package:fake_chat/view/page/manual/manualPage.dart';
 import 'package:fake_chat/view/page/select/selectPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,8 @@ class Routers {
     switch (settings.name) {
       case 'SelectPage':
         return CupertinoPageRoute(builder: (_) => SelectPage());
-
+      case 'ManualPage':
+        return CupertinoPageRoute(builder: (_) => ManualPage());
       case 'ChatPage':
         return CupertinoPageRoute(
             builder: (_) => ChatPage(selectedDate: arguments));

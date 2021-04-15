@@ -2,7 +2,6 @@ import 'package:fake_chat/route.dart';
 import 'package:fake_chat/splash_screen.dart';
 import 'package:fake_chat/view/style/colors.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 void main() {
   runApp(MyApp());

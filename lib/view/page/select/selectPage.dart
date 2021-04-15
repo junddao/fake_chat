@@ -63,6 +63,16 @@ class _SelectPageState extends State<SelectPage> {
     return Scaffold(
       appBar: _appBar(),
       body: _body(),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.yellow,
+        child: Text(
+          "사용법",
+          style: MTextStyles.bold12Black,
+        ),
+        onPressed: () {
+          Navigator.of(context).pushNamed("ManualPage");
+        },
+      ),
     );
   }
 
@@ -86,7 +96,7 @@ class _SelectPageState extends State<SelectPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("시간", style: MTextStyles.bold16Black),
+                  Text("채팅 시작 시간", style: MTextStyles.bold16Black),
                   SizedBox(
                     height: 8,
                   ),
@@ -155,57 +165,57 @@ class _SelectPageState extends State<SelectPage> {
                   SizedBox(height: 16),
                   // 구분줄
 
-                  Text("내 사진", style: MTextStyles.bold16Black),
-                  SizedBox(height: 16),
-                  Row(
-                    children: [
-                      SizedBox(width: 16),
-                      InkWell(
-                        onTap: () {
-                          getMyImage();
-                        },
-                        child: Container(
-                          height: 44,
-                          width: 120,
-                          decoration: BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(24)),
-                              border: Border.all(
-                                  color: MColors.white_three, width: 1),
-                              color: MColors.white),
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 10, right: 10),
-                            child: Center(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SvgPicture.asset('assets/icons/camera_g.svg'),
-                                  SizedBox(
-                                    width: 6,
-                                  ),
-                                  Text('사진 선택',
-                                      style: MTextStyles.medium12BrownishGrey),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 20),
-                      //사진 추가 listview
+                  // Text("내 사진", style: MTextStyles.bold16Black),
+                  // SizedBox(height: 16),
+                  // Row(
+                  //   children: [
+                  //     SizedBox(width: 16),
+                  //     InkWell(
+                  //       onTap: () {
+                  //         getMyImage();
+                  //       },
+                  //       child: Container(
+                  //         height: 44,
+                  //         width: 120,
+                  //         decoration: BoxDecoration(
+                  //             borderRadius:
+                  //                 BorderRadius.all(Radius.circular(24)),
+                  //             border: Border.all(
+                  //                 color: MColors.white_three, width: 1),
+                  //             color: MColors.white),
+                  //         child: Padding(
+                  //           padding: const EdgeInsets.only(left: 10, right: 10),
+                  //           child: Center(
+                  //             child: Row(
+                  //               mainAxisAlignment: MainAxisAlignment.center,
+                  //               children: [
+                  //                 SvgPicture.asset('assets/icons/camera_g.svg'),
+                  //                 SizedBox(
+                  //                   width: 6,
+                  //                 ),
+                  //                 Text('사진 선택',
+                  //                     style: MTextStyles.medium12BrownishGrey),
+                  //               ],
+                  //             ),
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ),
+                  //     SizedBox(width: 20),
+                  //     //사진 추가 listview
 
-                      Container(
-                        height: 70,
-                        width: 70,
-                        child: _myImage == null
-                            ? SizedBox.shrink()
-                            : CircleAvatar(
-                                backgroundImage: FileImage(_myImage),
-                                radius: 20,
-                              ),
-                      ),
-                    ],
-                  ),
+                  //     Container(
+                  //       height: 70,
+                  //       width: 70,
+                  //       child: _myImage == null
+                  //           ? SizedBox.shrink()
+                  //           : CircleAvatar(
+                  //               backgroundImage: FileImage(_myImage),
+                  //               radius: 20,
+                  //             ),
+                  //     ),
+                  //   ],
+                  // ),
                   divideLine(),
                   SizedBox(height: 16),
                   Text("상대방 아이디", style: MTextStyles.bold16Black),
@@ -306,17 +316,23 @@ class _SelectPageState extends State<SelectPage> {
                 style: MTextStyles.bold12White,
               ),
               onPressed: () {
-                SelectedData selectedData = new SelectedData(
-                  pickedDate: pickedDate,
-                  myId: myIdController.text,
-                  yourId: yourIdController.text,
-                  time: time,
-                  myImage: _myImage,
-                  yourImage: _yourImage,
-                );
+                if (myIdController.text == "" ||
+                    yourIdController.text == "" ||
+                    _yourImage == null) {
+                  showAlertDialog(context);
+                } else {
+                  SelectedData selectedData = new SelectedData(
+                    pickedDate: pickedDate,
+                    myId: myIdController.text,
+                    yourId: yourIdController.text,
+                    time: time,
+                    // myImage: _myImage,
+                    yourImage: _yourImage,
+                  );
 
-                Navigator.of(context)
-                    .pushNamed("ChatPage", arguments: selectedData);
+                  Navigator.of(context)
+                      .pushNamed("ChatPage", arguments: selectedData);
+                }
               },
             ),
           ),
@@ -358,5 +374,26 @@ class _SelectPageState extends State<SelectPage> {
         time = t;
       });
     }
+  }
+
+  Future<void> showAlertDialog(BuildContext context) async {
+    String result = await showDialog(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('에러.'),
+          content: Text("누락된 항목이 있습니다."),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.pop(context, "OK");
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
