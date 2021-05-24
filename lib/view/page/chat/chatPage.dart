@@ -21,10 +21,12 @@ class _ChatPageState extends State<ChatPage> {
   List<MessageData> _messageDatas = [];
   TextEditingController _textController;
   DateTime pDateTime;
+  ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
     _textController = new TextEditingController();
     pDateTime = DateTime.now();
 
@@ -99,6 +101,7 @@ class _ChatPageState extends State<ChatPage> {
           child: Padding(
             padding: const EdgeInsets.only(left: 8, right: 8),
             child: ListView.builder(
+              controller: _scrollController,
               shrinkWrap: true,
               itemCount: _messageDatas.length,
               itemBuilder: (context, index) {
@@ -134,6 +137,7 @@ class _ChatPageState extends State<ChatPage> {
                           t: getFakeTime(),
                         ),
                       );
+                      scrollToBottom();
                       _textController.clear();
                     });
                   },
@@ -183,6 +187,7 @@ class _ChatPageState extends State<ChatPage> {
                                 t: getFakeTime(),
                               ),
                             );
+                            scrollToBottom();
                             _textController.clear();
                           });
                         },
@@ -195,6 +200,15 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ),
       ],
+    );
+  }
+
+  void scrollToBottom() {
+    final bottomOffset = _scrollController.position.maxScrollExtent;
+    _scrollController.animateTo(
+      bottomOffset,
+      duration: Duration(milliseconds: 1000),
+      curve: Curves.easeInOut,
     );
   }
 
