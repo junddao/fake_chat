@@ -303,10 +303,27 @@ class _ChatPageState extends State<ChatPage> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Container(
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(
-              backgroundImage: FileImage(widget._selectedData.yourImage),
-              radius: 20,
+            // CircleAvatar(
+            //   backgroundImage: FileImage(widget._selectedData.yourImage),
+            //   radius: 20,
+            // ),
+
+            Container(
+              width: 40.0,
+              height: 40.0,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: FileImage(widget._selectedData.yourImage),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
             ),
             SizedBox(
               width: 8,
@@ -346,12 +363,12 @@ class _ChatPageState extends State<ChatPage> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          CircleAvatar(
-            backgroundColor: Colors.transparent,
-            radius: 20,
-          ),
+          // CircleAvatar(
+          //   backgroundColor: Colors.transparent,
+          //   radius: 20,
+          // ),
           SizedBox(
-            width: 8,
+            width: 48,
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -383,7 +400,7 @@ class _ChatPageState extends State<ChatPage> {
       radius: Radius.circular(8.0),
       child: Text(
         _messageDatas[index].message,
-        style: MTextStyles.regular18black,
+        style: MTextStyles.regular14BlackColor,
       ),
     );
   }
@@ -399,7 +416,7 @@ class _ChatPageState extends State<ChatPage> {
       radius: Radius.circular(8.0),
       child: Text(
         _messageDatas[index].message,
-        style: MTextStyles.regular18black,
+        style: MTextStyles.regular14BlackColor,
       ),
     );
   }
@@ -415,7 +432,7 @@ class _ChatPageState extends State<ChatPage> {
       radius: Radius.circular(8.0),
       child: Text(
         _messageDatas[index].message,
-        style: MTextStyles.regular18black,
+        style: MTextStyles.regular14BlackColor,
       ),
     );
   }
@@ -431,7 +448,7 @@ class _ChatPageState extends State<ChatPage> {
       radius: Radius.circular(8.0),
       child: Text(
         _messageDatas[index].message,
-        style: MTextStyles.regular18black,
+        style: MTextStyles.regular14BlackColor,
         maxLines: 10,
       ),
     );
