@@ -1,6 +1,5 @@
 import 'package:fake_chat/route.dart';
 import 'package:fake_chat/splash_screen.dart';
-import 'package:fake_chat/view/style/colors.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -16,7 +15,6 @@ class MyApp extends StatelessWidget {
       title: 'Fake Chat',
       theme: ThemeData(
         primaryColor: Colors.white,
-        accentColor: MColors.naver_green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       onGenerateRoute: Routers.generateRoute,

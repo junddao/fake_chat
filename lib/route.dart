@@ -4,6 +4,8 @@ import 'package:fake_chat/view/page/select/selectPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'data/selected_data.dart';
+
 class Routers {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     var arguments = settings.arguments;
@@ -14,8 +16,7 @@ class Routers {
       case 'ManualPage':
         return CupertinoPageRoute(builder: (_) => ManualPage());
       case 'ChatPage':
-        return CupertinoPageRoute(
-            builder: (_) => ChatPage(selectedDate: arguments));
+        return CupertinoPageRoute(builder: (_) => ChatPage(arguments as SelectedData));
 
       // case 'ClassProceedingPage':
       //   return CupertinoPageRoute(
@@ -33,8 +34,7 @@ class Routers {
         return CupertinoPageRoute(
             builder: (_) => Scaffold(
                   body: Center(
-                    child:
-                        Text('${settings.name} 는 lib/route.dart에 정의 되지 않았습니다.'),
+                    child: Text('${settings.name} 는 lib/route.dart에 정의 되지 않았습니다.'),
                   ),
                 ));
     }

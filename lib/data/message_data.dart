@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 class MessageData {
-  String message;
-  bool isMine;
-  bool deviderDate;
-  TimeOfDay t;
+  final String message;
+  final bool isMine;
+  final bool? dividerDate;
+  final TimeOfDay t;
   MessageData({
-    this.message,
-    this.isMine,
-    this.deviderDate,
-    this.t,
+    required this.message,
+    required this.isMine,
+    this.dividerDate,
+    required this.t,
   });
 }

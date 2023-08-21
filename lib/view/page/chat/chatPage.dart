@@ -1,16 +1,15 @@
 import 'package:bubble/bubble.dart';
 import 'package:fake_chat/data/message_data.dart';
 import 'package:fake_chat/data/selected_data.dart';
-import 'package:fake_chat/util/admob_service.dart';
 import 'package:fake_chat/view/style/colors.dart';
 import 'package:fake_chat/view/style/size_config.dart';
 import 'package:fake_chat/view/style/textstyles.dart';
-import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+
+import '../../../util/admob_service.dart';
 
 class ChatPage extends StatefulWidget {
-  ChatPage({SelectedData selectedDate}) : _selectedData = selectedDate;
+  ChatPage(this._selectedData);
   @override
   _ChatPageState createState() => _ChatPageState();
 
@@ -19,9 +18,9 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   List<MessageData> _messageDatas = [];
-  TextEditingController _textController;
-  DateTime pDateTime;
-  ScrollController _scrollController;
+  late TextEditingController _textController;
+  late DateTime pDateTime;
+  late ScrollController _scrollController;
 
   @override
   void initState() {
@@ -30,20 +29,15 @@ class _ChatPageState extends State<ChatPage> {
     _textController = new TextEditingController();
     pDateTime = DateTime.now();
 
-    // 초기에 광고 하나 보여주자
-    AdMobService ams = AdMobService();
-    InterstitialAd newAd = ams.getNewInterstitial();
-    newAd.load();
-    newAd.show(
-      anchorType: AnchorType.bottom,
-      anchorOffset: 0.0,
-      horizontalCenterOffset: 0.0,
-    );
+    if (AdMobService().interstitialAd != null) {
+      AdMobService().interstitialAd!.show();
+    }
   }
 
   @override
   void dispose() {
     _textController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -85,8 +79,7 @@ class _ChatPageState extends State<ChatPage> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Padding(
-              padding:
-                  const EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
+              padding: const EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
               child: Text(
                 getFakeDate(),
                 style: MTextStyles.regular12White,
@@ -175,9 +168,7 @@ class _ChatPageState extends State<ChatPage> {
                         width: 8,
                       ),
                       InkWell(
-                        child: Text("#",
-                            style: TextStyle(
-                                fontSize: 24, color: MColors.greyish)),
+                        child: Text("#", style: TextStyle(fontSize: 24, color: MColors.greyish)),
                         onTap: () {
                           setState(() {
                             _messageDatas.add(
@@ -215,14 +206,11 @@ class _ChatPageState extends State<ChatPage> {
   Widget returnMyMessage(int index) {
     if (index == 0 && _messageDatas[index].isMine == true) {
       return returnMyFirstMessage(index);
-    } else if (index > 0 &&
-        _messageDatas[index].isMine == true &&
-        _messageDatas[index - 1].isMine == false) {
+    } else if (index > 0 && _messageDatas[index].isMine == true && _messageDatas[index - 1].isMine == false) {
       {
         return returnMyFirstMessage(index);
       }
-    } else if (index > 0 &&
-        _messageDatas[index].t.minute != _messageDatas[index - 1].t.minute) {
+    } else if (index > 0 && _messageDatas[index].t.minute != _messageDatas[index - 1].t.minute) {
       return returnMyFirstMessage(index);
     } else {
       return returnMyNormalMessage(index);
@@ -284,14 +272,11 @@ class _ChatPageState extends State<ChatPage> {
   Widget returnYourMessage(int index) {
     if (index == 0 && _messageDatas[index].isMine == false) {
       return returnYourFirstMessage(index);
-    } else if (index > 0 &&
-        _messageDatas[index].isMine == false &&
-        _messageDatas[index - 1].isMine == true) {
+    } else if (index > 0 && _messageDatas[index].isMine == false && _messageDatas[index - 1].isMine == true) {
       {
         return returnYourFirstMessage(index);
       }
-    } else if (index > 0 &&
-        _messageDatas[index].t.minute != _messageDatas[index - 1].t.minute) {
+    } else if (index > 0 && _messageDatas[index].t.minute != _messageDatas[index - 1].t.minute) {
       return returnYourFirstMessage(index);
     } else {
       return returnYourNormalMessage(index);
@@ -457,8 +442,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget getTime(int index) {
     if (_messageDatas.length > index + 1) {
       if (_messageDatas[index].isMine == _messageDatas[index + 1].isMine) {
-        if (_messageDatas[index].t.minute ==
-            _messageDatas[index + 1].t.minute) {
+        if (_messageDatas[index].t.minute == _messageDatas[index + 1].t.minute) {
           return SizedBox.shrink();
         }
       }
@@ -472,8 +456,7 @@ class _ChatPageState extends State<ChatPage> {
         tempSMinutes = "0" + tempMinutes.toString();
       } else
         tempSMinutes = tempMinutes.toString();
-      return Text("오후 ${tempHour}:" + tempSMinutes,
-          style: MTextStyles.regular10Grey06);
+      return Text("오후 ${tempHour}:" + tempSMinutes, style: MTextStyles.regular10Grey06);
     } else {
       int tempHour = _messageDatas[index].t.hour;
       int tempMinutes = _messageDatas[index].t.minute;
@@ -504,7 +487,7 @@ class _ChatPageState extends State<ChatPage> {
     String year = widget._selectedData.pickedDate.year.toString() + "년 ";
     String month = widget._selectedData.pickedDate.month.toString() + "월 ";
     String day = widget._selectedData.pickedDate.day.toString() + "일 ";
-    String dayOfTheWeek;
+    late String dayOfTheWeek;
     switch (widget._selectedData.pickedDate.weekday) {
       case 1:
         dayOfTheWeek = "월요일";

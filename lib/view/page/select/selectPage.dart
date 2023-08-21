@@ -8,7 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
+
+import '../../../util/admob_service.dart';
 
 class SelectPage extends StatefulWidget {
   @override
@@ -16,11 +17,10 @@ class SelectPage extends StatefulWidget {
 }
 
 class _SelectPageState extends State<SelectPage> {
-  DateTime pickedDate;
-  TimeOfDay time;
+  late DateTime pickedDate;
+  late TimeOfDay time;
 
-  File _myImage;
-  File _yourImage;
+  File? _yourImage;
   final picker = ImagePicker();
 
   final TextEditingController myIdController = new TextEditingController();
@@ -31,22 +31,18 @@ class _SelectPageState extends State<SelectPage> {
     super.initState();
     pickedDate = DateTime.now();
     time = TimeOfDay.now();
+    AdMobService().getNewInterstitial();
   }
 
-  Future getMyImage() async {
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
-
-    setState(() {
-      if (pickedFile != null) {
-        _myImage = File(pickedFile.path);
-      } else {
-        print('No image selected.');
-      }
-    });
+  @override
+  void dispose() {
+    myIdController.dispose();
+    yourIdController.dispose();
+    super.dispose();
   }
 
   Future getYourImage() async {
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     setState(() {
       if (pickedFile != null) {
@@ -91,6 +87,7 @@ class _SelectPageState extends State<SelectPage> {
       children: [
         Expanded(
           child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             child: Container(
               padding: EdgeInsets.only(left: 10, right: 10),
               child: Column(
@@ -140,8 +137,7 @@ class _SelectPageState extends State<SelectPage> {
                     padding: EdgeInsets.only(left: 16, right: 16, bottom: 4),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.all(Radius.circular(8)),
-                        border:
-                            Border.all(color: MColors.pinkish_grey, width: 1)),
+                        border: Border.all(color: MColors.pinkish_grey, width: 1)),
                     child: TextFormField(
                       controller: myIdController,
                       // onChanged: (value){
@@ -163,59 +159,7 @@ class _SelectPageState extends State<SelectPage> {
                     ),
                   ),
                   SizedBox(height: 16),
-                  // 구분줄
 
-                  // Text("내 사진", style: MTextStyles.bold16Black),
-                  // SizedBox(height: 16),
-                  // Row(
-                  //   children: [
-                  //     SizedBox(width: 16),
-                  //     InkWell(
-                  //       onTap: () {
-                  //         getMyImage();
-                  //       },
-                  //       child: Container(
-                  //         height: 44,
-                  //         width: 120,
-                  //         decoration: BoxDecoration(
-                  //             borderRadius:
-                  //                 BorderRadius.all(Radius.circular(24)),
-                  //             border: Border.all(
-                  //                 color: MColors.white_three, width: 1),
-                  //             color: MColors.white),
-                  //         child: Padding(
-                  //           padding: const EdgeInsets.only(left: 10, right: 10),
-                  //           child: Center(
-                  //             child: Row(
-                  //               mainAxisAlignment: MainAxisAlignment.center,
-                  //               children: [
-                  //                 SvgPicture.asset('assets/icons/camera_g.svg'),
-                  //                 SizedBox(
-                  //                   width: 6,
-                  //                 ),
-                  //                 Text('사진 선택',
-                  //                     style: MTextStyles.medium12BrownishGrey),
-                  //               ],
-                  //             ),
-                  //           ),
-                  //         ),
-                  //       ),
-                  //     ),
-                  //     SizedBox(width: 20),
-                  //     //사진 추가 listview
-
-                  //     Container(
-                  //       height: 70,
-                  //       width: 70,
-                  //       child: _myImage == null
-                  //           ? SizedBox.shrink()
-                  //           : CircleAvatar(
-                  //               backgroundImage: FileImage(_myImage),
-                  //               radius: 20,
-                  //             ),
-                  //     ),
-                  //   ],
-                  // ),
                   divideLine(),
                   SizedBox(height: 16),
                   Text("상대방 아이디", style: MTextStyles.bold16Black),
@@ -227,8 +171,7 @@ class _SelectPageState extends State<SelectPage> {
                     padding: EdgeInsets.only(left: 16, right: 16, bottom: 4),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.all(Radius.circular(8)),
-                        border:
-                            Border.all(color: MColors.pinkish_grey, width: 1)),
+                        border: Border.all(color: MColors.pinkish_grey, width: 1)),
                     child: TextFormField(
                       controller: yourIdController,
                       inputFormatters: [
@@ -260,10 +203,8 @@ class _SelectPageState extends State<SelectPage> {
                           height: 44,
                           width: 120,
                           decoration: BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(24)),
-                              border: Border.all(
-                                  color: MColors.white_three, width: 1),
+                              borderRadius: BorderRadius.all(Radius.circular(24)),
+                              border: Border.all(color: MColors.white_three, width: 1),
                               color: MColors.white),
                           child: Padding(
                             padding: const EdgeInsets.only(left: 10, right: 10),
@@ -275,8 +216,7 @@ class _SelectPageState extends State<SelectPage> {
                                   SizedBox(
                                     width: 6,
                                   ),
-                                  Text('사진 선택',
-                                      style: MTextStyles.medium12BrownishGrey),
+                                  Text('사진 선택', style: MTextStyles.medium12BrownishGrey),
                                 ],
                               ),
                             ),
@@ -292,7 +232,7 @@ class _SelectPageState extends State<SelectPage> {
                         child: _yourImage == null
                             ? SizedBox.shrink()
                             : CircleAvatar(
-                                backgroundImage: FileImage(_yourImage),
+                                backgroundImage: FileImage(_yourImage!),
                                 radius: 20,
                               ),
                       ),
@@ -305,36 +245,35 @@ class _SelectPageState extends State<SelectPage> {
             ),
           ),
         ),
-        Container(
-          decoration: BoxDecoration(
-            color: MColors.tomato,
-          ),
-          child: Center(
-            child: TextButton(
-              child: Text(
-                "채팅방 열기",
-                style: MTextStyles.bold12White,
-              ),
-              onPressed: () {
-                if (myIdController.text == "" ||
-                    yourIdController.text == "" ||
-                    _yourImage == null) {
-                  showAlertDialog(context);
-                } else {
-                  SelectedData selectedData = new SelectedData(
-                    pickedDate: pickedDate,
-                    myId: myIdController.text,
-                    yourId: yourIdController.text,
-                    time: time,
-                    // myImage: _myImage,
-                    yourImage: _yourImage,
-                  );
-
-                  Navigator.of(context)
-                      .pushNamed("ChatPage", arguments: selectedData);
-                }
-              },
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            primary: MColors.tomato,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(0),
             ),
+            minimumSize: Size(SizeConfig.screenWidth, 50),
+          ),
+          onPressed: () async {
+            if (myIdController.text == "" || yourIdController.text == "" || _yourImage == null) {
+              showAlertDialog(context);
+            } else {
+              // 초기에 광고 하나 보여주자
+
+              SelectedData selectedData = new SelectedData(
+                pickedDate: pickedDate,
+                myId: myIdController.text,
+                yourId: yourIdController.text,
+                time: time,
+                // myImage: _myImage,
+                yourImage: _yourImage!,
+              );
+
+              Navigator.of(context).pushNamed("ChatPage", arguments: selectedData);
+            }
+          },
+          child: Text(
+            "채팅방 열기",
+            style: MTextStyles.bold12White,
           ),
         ),
       ],
@@ -355,7 +294,7 @@ class _SelectPageState extends State<SelectPage> {
   loadImage() {}
 
   Future<void> _pickDate() async {
-    DateTime date = await showDatePicker(
+    DateTime? date = await showDatePicker(
         context: context,
         initialDate: pickedDate,
         firstDate: DateTime(DateTime.now().year - 5),
@@ -368,7 +307,7 @@ class _SelectPageState extends State<SelectPage> {
   }
 
   void _pickTime() async {
-    TimeOfDay t = await showTimePicker(context: context, initialTime: time);
+    TimeOfDay? t = await showTimePicker(context: context, initialTime: time);
     if (t != null) {
       setState(() {
         time = t;
